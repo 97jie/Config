@@ -2,6 +2,7 @@ package com.example.wangjie.config;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,10 +16,9 @@ import android.widget.Toast;
 import java.util.Formatter;
 
 public class RateActivity extends Activity {
-    private final String TAG = "Rate";
-    private float dollarRate = 0.1f;
-    private float euroRate = 0.2f;
-    private float wonRate = 0.3f;
+    private float dollarRate ;
+    private float euroRate;
+    private float wonRate ;
 
     private Button btn_doller;
     private Button btn_won;
@@ -38,6 +38,11 @@ public class RateActivity extends Activity {
         et_rmb=findViewById(R.id.et_rmb);
         tv_money=findViewById(R.id.tv_money);
 
+        SharedPreferences sp=getSharedPreferences("myRate",this.MODE_PRIVATE);
+
+        dollarRate=sp.getFloat("dollar",0.0f);
+        euroRate=sp.getFloat("euor",0.0f);
+        wonRate=sp.getFloat("won",0.0f);
 
     }
 
@@ -67,7 +72,6 @@ public class RateActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.menu_set){
-            //点击后的事件处理，可填入打开配置汇率页⾯的代码
            config();
         }
         return super.onOptionsItemSelected(item);
@@ -79,9 +83,15 @@ public class RateActivity extends Activity {
             dollarRate = bundle.getFloat("key_dollar",0.1f);
             euroRate = bundle.getFloat("key_euro",0.1f);
             wonRate = bundle.getFloat("key_won",0.1f);
-            Log.i(TAG, "onActivityResult: dollarRate=" + dollarRate);
-            Log.i(TAG, "onActivityResult: euroRate=" + euroRate);
-            Log.i(TAG, "onActivityResult: wonRate=" + wonRate);
+
+            SharedPreferences sp=getSharedPreferences("myRate",this.MODE_PRIVATE);
+            SharedPreferences.Editor editor=sp.edit();
+
+            editor.putFloat("dollar",dollarRate);
+            editor.putFloat("euor",euroRate);
+            editor.putFloat("won",wonRate);
+
+            editor.commit();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -96,10 +106,6 @@ public class RateActivity extends Activity {
         config.putExtra("dollar_rate_key",dollarRate);
         config.putExtra("euro_rate_key",euroRate);
         config.putExtra("won_rate_key",wonRate);
-        Log.i(TAG, "openOne: dollarRate=" + dollarRate);
-        Log.i(TAG, "openOne: euroRate=" + euroRate);
-        Log.i(TAG, "openOne: wonRate=" + wonRate);
-        //startActivity(config);
         startActivityForResult(config,1);
     }
 

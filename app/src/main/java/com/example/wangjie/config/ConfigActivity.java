@@ -9,7 +9,6 @@ import android.widget.EditText;
 
 public class ConfigActivity extends Activity {
 
-    private final String TAG = "ConfigActivity";
     EditText dollarText;
     EditText euroText;
     EditText wonText;
@@ -17,14 +16,10 @@ public class ConfigActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
-
         Intent intent = getIntent();
         float dollar2 = intent.getFloatExtra("dollar_rate_key",0.0f);
         float euro2 = intent.getFloatExtra("euro_rate_key",0.0f);
         float won2 = intent.getFloatExtra("won_rate_key",0.0f);
-        Log.i(TAG, "onCreate: dollar2=" + dollar2);
-        Log.i(TAG, "onCreate: euro2=" + euro2);
-        Log.i(TAG, "onCreate: won2=" + won2);
 
         dollarText = (EditText)findViewById(R.id.dollar_rate);
         euroText = (EditText)findViewById(R.id.euro_rate);
@@ -36,15 +31,9 @@ public class ConfigActivity extends Activity {
     }
 
     public void save(View v){
-        Log.i(TAG, "save: ");
-//获取新的值
         float newDollar = Float.parseFloat(dollarText.getText().toString());
         float newEuroi = Float.parseFloat(euroText.getText().toString());
         float newWon = Float.parseFloat(wonText.getText().toString());
-        Log.i(TAG, "save: 获取到新的值");
-        Log.i(TAG, "save: newDollar=" + newDollar);
-        Log.i(TAG, "save: newEuroi=" + newEuroi);
-        Log.i(TAG, "save: newWon=" + newWon);
 
         Intent intent = getIntent();
         Bundle bdl = new Bundle();
@@ -53,7 +42,6 @@ public class ConfigActivity extends Activity {
         bdl.putFloat("key_won",newWon);
         intent.putExtras(bdl);
         setResult(2,intent);
-        //返回到调用页⾯
         finish();
     }
 
