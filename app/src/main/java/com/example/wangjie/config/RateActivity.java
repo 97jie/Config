@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,13 +15,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 
 public class RateActivity extends Activity {
     private float dollarRate ;
     private float euroRate;
     private float wonRate ;
 
+    private  final String url="http://www.zou114.com/agiotage/huilv.asp?bi=CNY";
     private Button btn_doller;
     private Button btn_won;
     private Button btn_euor;
@@ -38,14 +50,55 @@ public class RateActivity extends Activity {
         et_rmb=findViewById(R.id.et_rmb);
         tv_money=findViewById(R.id.tv_money);
 
-        SharedPreferences sp=getSharedPreferences("myRate",this.MODE_PRIVATE);
+        new Thread(){
+            @Override
+            public void run() {
+                List<Float> list=new ArrayList<>();
+                try {
+                    list.add(getRateFromWeb("CNY/USD",url));
+                    list.add(getRateFromWeb("CNY/EUR",url));
+                    list.add(getRateFromWeb("CNY/KRW",url));
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+                Message message= Message.obtain();
+                message.what=1;
+                message.obj=list;
 
-        dollarRate=sp.getFloat("dollar",0.0f);
-        euroRate=sp.getFloat("euor",0.0f);
-        wonRate=sp.getFloat("won",0.0f);
+                handler.sendMessage(message);
+            }
+        }.start();
+//        SharedPreferences sp=getSharedPreferences("myRate",this.MODE_PRIVATE);
+//        dollarRate=sp.getFloat("dollar",0.0f);
+//        euroRate=sp.getFloat("euor",0.0f);
+//        wonRate=sp.getFloat("won",0.0f);
 
     }
 
+    Handler handler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what==1){
+                List<Float> list= (List<Float>) msg.obj;
+                dollarRate=list.get(0);
+                euroRate=list.get(1);
+                wonRate=list.get(2);
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+    private float getRateFromWeb(String name,String url)throws IOException{
+        Document document = Jsoup.connect(url).get();
+        Elements trs= document.getElementsByTag("table").get(0).getElementsByTag("tr");
+        for(Element tr : trs) {
+            Elements tds=tr.getElementsByTag("td");
+            if(name.equals(tds.get(1).text())){
+                return  Float.parseFloat(tds.get(2).text());
+            }
+        }
+        return 0.0f;
+    }
 
     public void calculate(View v){
         double rmb=0.0;
@@ -87,10 +140,7 @@ public class RateActivity extends Activity {
             SharedPreferences sp=getSharedPreferences("myRate",this.MODE_PRIVATE);
             SharedPreferences.Editor editor=sp.edit();
 
-            editor.putFloat("dollar",dollarRate);
-            editor.putFloat("euor",euroRate);
-            editor.putFloat("won",wonRate);
-
+            editor.putFloat("dollar",dollarRate).putFloat("euor",euroRate).putFloat("won",wonRate);
             editor.commit();
         }
         super.onActivityResult(requestCode, resultCode, data);
